@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F7F7FA">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Duo">
+<title>Duo</title>
+<script>try{var d=JSON.parse(localStorage.getItem("duo:v1")||"{}");if(d.theme==="dark")document.documentElement.setAttribute("data-theme","dark");}catch(e){}</script>
+<link id="touchIcon" rel="apple-touch-icon" href="">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg:#F7F7FA;--surface:#FFFFFF;--ink:#11131C;--muted:#4F5262;--line:#E4E4EE;--line-strong:#C6C6D3;--field:#F1F1F6;
+  --accent:#4B3FD6;--accent-ink:#FFFFFF;--focus:#4B3FD6;--overlay:rgba(17,19,28,.45);--gold:#E0A316;
+  --dawn:#FBEEE3;--dawn-muted:#5A4A40;--dawn-hill:#F3DCCB;
+  --day:#ECEBFB;--day-muted:#4A4D5C;--day-hill:#DCD9F6;
+  --dusk:#F9E4E4;--dusk-muted:#5E4447;--dusk-hill:#F0D0D2;
+  --night:#262A55;--night-ink:#F4F4FB;--night-muted:#C9CBE8;--night-hill:#333869;
+  --card-ink:#11131C;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme:light;
+}
+:root[data-theme="dark"]{
+  --bg:#0D1020;--surface:#171B2E;--ink:#F2F3F8;--muted:#A7ABBE;--line:#262B42;--line-strong:#3A4060;--field:#1F2438;
+  --accent:#4B3FD6;--accent-ink:#FFFFFF;--focus:#9A93F5;--overlay:rgba(0,0,0,.6);--gold:#F6C94C;
+  --dawn:#2A2230;--dawn-muted:#CBBAC0;--dawn-hill:#362B3D;
+  --day:#1C2140;--day-muted:#B3B7D4;--day-hill:#262C52;
+  --dusk:#2E1F2B;--dusk-muted:#CDB5C0;--dusk-hill:#3B2837;
+  --night:#12152B;--night-ink:#F2F3F8;--night-muted:#A9ADCB;--night-hill:#1B1F3D;
+  --card-ink:#F2F3F8;color-scheme:dark;
+}
+html{height:100%;background:var(--bg);scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:'DM Sans',system-ui,-apple-system,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.app{max-width:440px;margin:0 auto;padding:20px 20px 32px;display:flex;flex-direction:column;min-height:100%}
+.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.brand{font-family:'Sora',sans-serif;font-weight:700;font-size:30px;line-height:1;letter-spacing:-.6px;margin:1.5px 0 0;display:flex;align-items:baseline;gap:8px}
+.brand .mark{flex-shrink:0;display:block}
+.top .icon-btn{margin-right:-10px}
+.icon-btn{width:44px;height:44px;border-radius:22px;border:none;background:transparent;display:flex;align-items:center;justify-content:center}
+.icon-btn:hover{background:var(--field)}
+.card{position:relative;overflow:hidden;border-radius:26px;padding:22px;min-height:232px;display:flex;flex-direction:column;gap:8px;color:var(--card-ink);transition:background-color .6s ease}
+.card .label{display:flex;align-items:center;gap:8px;font-size:14px;position:relative;z-index:1}
+.card .label svg{margin-left:-1px;flex-shrink:0}
+.card .city{position:relative;z-index:1;align-self:flex-start;display:flex;align-items:center;gap:6px;min-height:40px;padding:0;border:none;background:transparent;font-size:17px;font-weight:700;color:inherit;text-align:left}
+.card .clock{position:relative;z-index:1;display:flex;align-items:baseline;gap:6px;margin-left:-1px;font-family:'Sora',sans-serif;font-weight:700}
+.card .time{font-size:64px;letter-spacing:-2.5px;line-height:1;font-variant-numeric:tabular-nums}
+.card .ampm{font-size:18px}
+.card .date{position:relative;z-index:1;font-size:14px}
+.hill{position:absolute;right:-70px;bottom:-130px;width:320px;height:210px;border-radius:50%;transition:background-color .6s ease}
+.orb{position:absolute;right:40px;width:52px;height:52px;border-radius:50%;transition:top .6s ease,background-color .6s ease}
+.orb.moon{background:transparent !important;box-shadow:inset -13px 5px 0 0 #F3EFD9;width:44px;height:44px}
+.stars{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .6s ease}
+.stars i{position:absolute;width:3px;height:3px;border-radius:50%;background:#F3EFD9;opacity:.8}
+.phase-dawn{background:var(--dawn)}.phase-dawn .muted{color:var(--dawn-muted)}.phase-dawn .hill{background:var(--dawn-hill)}
+.phase-day{background:var(--day)}.phase-day .muted{color:var(--day-muted)}.phase-day .hill{background:var(--day-hill)}
+.phase-dusk{background:var(--dusk)}.phase-dusk .muted{color:var(--dusk-muted)}.phase-dusk .hill{background:var(--dusk-hill)}
+.phase-night{background:var(--night);color:var(--night-ink)}.phase-night .muted{color:var(--night-muted)}.phase-night .hill{background:var(--night-hill)}.phase-night .stars{opacity:1}
+.swap-wrap{display:flex;justify-content:center;margin:-18px 0;position:relative;z-index:2}
+.swap{width:52px;height:52px;border-radius:26px;border:4px solid var(--bg);background:var(--surface);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(17,19,28,.1);transition:transform .35s ease}
+.swap.spin{transform:rotate(180deg)}
+.diff{margin-top:16px;padding:16px;border-radius:18px;background:var(--surface);border:1px solid var(--line);text-align:center;font-family:'Sora',sans-serif;font-weight:700;font-size:20px}
+.extras{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-direction:column;gap:10px}
+.extras:empty{display:none}
+.extra{display:flex;align-items:center;gap:12px;padding:12px 10px 12px 22px;border-radius:18px;background:var(--surface);border:1px solid var(--line)}
+.extra .info{flex-grow:1;display:flex;flex-direction:column;gap:2px;min-width:0}
+.extra .name{font-weight:700;font-size:16px}
+.extra .sub{font-size:13px;color:var(--muted)}
+.extra .t{font-family:'Sora',sans-serif;font-weight:700;font-size:22px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.extra .t small{font-size:13px;margin-left:3px}
+.add{margin-top:12px;height:52px;border-radius:16px;border:1.5px dashed var(--line-strong);background:transparent;font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px}
+.add:hover{border-color:var(--muted)}
+.scrim{position:fixed;inset:0;background:var(--overlay);opacity:0;pointer-events:none;transition:opacity .25s ease;z-index:10}
+.scrim.open{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;margin:0 auto;max-width:480px;max-height:88%;background:var(--surface);color:var(--ink);border-radius:28px 28px 0 0;padding:12px 20px calc(20px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px;transform:translateY(105%);transition:transform .3s ease;z-index:11}
+.sheet.open{transform:translateY(0)}
+.sheet:focus{outline:none}
+.search input:focus-visible{outline:2px solid var(--focus);outline-offset:0}
+.fieldset{display:flex;flex-direction:column;gap:10px}
+#setSheet{gap:20px}
+#setSheet h2{margin-bottom:-4px}
+.handle{align-self:center;width:40px;height:5px;border-radius:3px;background:var(--line-strong)}
+.sheet h2{margin:4px 0 0;font-family:'Sora',sans-serif;font-weight:700;font-size:22px}
+.search{position:relative}
+.search svg{position:absolute;left:14px;top:15px;color:var(--muted)}
+.search input{width:100%;height:48px;padding:0 14px 0 42px;border:none;border-radius:14px;background:var(--field);color:var(--ink);font-family:inherit;font-size:16px}
+.list{overflow-y:auto;margin:0 -20px;padding:0 20px;display:flex;flex-direction:column}
+.group{font-size:14px;font-weight:700;margin:10px 0 2px}
+.row{display:flex;align-items:center;gap:14px;min-height:60px;padding:6px 0;border:none;background:transparent;text-align:left;width:100%}
+.badge{width:38px;height:38px;border-radius:19px;background:var(--field);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.row .info{flex-grow:1;display:flex;flex-direction:column}
+.row .n{font-size:16px;font-weight:600}
+.row .c{font-size:13px;color:var(--muted)}
+.row .now{font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+.tick{width:24px;height:24px;border-radius:12px;border:1.5px solid var(--line-strong);flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.row[aria-current="true"] .tick{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.row[aria-current="true"] .badge{background:var(--accent);color:var(--accent-ink)}
+.empty{padding:24px 0;color:var(--muted);font-size:15px}
+.seg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:4px;background:var(--field);border-radius:14px}
+.seg.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.seg button{height:42px;border:none;border-radius:11px;background:transparent;font-size:15px;font-weight:600;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.field-label{font-size:14px;font-weight:700}
+.primary{height:54px;border:none;border-radius:16px;background:var(--accent);color:var(--accent-ink);font-size:16px;font-weight:700}
+.hint{font-size:14px;line-height:1.5;color:var(--muted);margin:0}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (prefers-reduced-motion: reduce){*{transition:none !important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <h1 class="brand"><svg class="mark" width="30.5" height="22" viewBox="2.7 6.7 28.6 20.6" fill="none" aria-hidden="true"><circle cx="13" cy="17" r="9" stroke="var(--ink)" stroke-width="2.6"/><circle cx="21" cy="17" r="9" stroke="var(--gold)" stroke-width="2.6"/></svg>Duo</h1>
+    <button class="icon-btn" id="openSettings" aria-label="Settings"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+  </div>
+
+  <section class="card" id="cardYou" aria-label="Your time">
+    <div class="stars" aria-hidden="true"><i style="left:58%;top:18%"></i><i style="left:74%;top:30%"></i><i style="left:66%;top:52%"></i><i style="left:86%;top:14%"></i><i style="left:52%;top:38%"></i></div>
+    <div class="orb" aria-hidden="true"></div>
+    <div class="hill" aria-hidden="true"></div>
+    <span class="label muted"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>Your time</span>
+    <button class="city" data-slot="you"><span class="city-name"></span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+    <div class="clock"><span class="time"></span><span class="ampm"></span></div>
+    <span class="date muted"></span>
+  </section>
+
+  <div class="swap-wrap"><button class="swap" id="swap" aria-label="Swap the two cities"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4v16M4 8l4-4 4 4M16 20V4M20 16l-4 4-4-4"/></svg></button></div>
+
+  <section class="card" id="cardCompare" aria-label="Compare with">
+    <div class="stars" aria-hidden="true"><i style="left:58%;top:18%"></i><i style="left:74%;top:30%"></i><i style="left:66%;top:52%"></i><i style="left:86%;top:14%"></i><i style="left:52%;top:38%"></i></div>
+    <div class="orb" aria-hidden="true"></div>
+    <div class="hill" aria-hidden="true"></div>
+    <span class="label muted"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>Compare with</span>
+    <button class="city" data-slot="compare"><span class="city-name"></span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+    <div class="clock"><span class="time"></span><span class="ampm"></span></div>
+    <span class="date muted"></span>
+  </section>
+
+  <div class="diff" id="diff" aria-live="polite"></div>
+  <ul class="extras" id="extras" aria-label="More cities"></ul>
+  <button class="add" id="addCity"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add a city</button>
+</div>
+
+<div class="scrim" id="scrim"></div>
+
+<div class="sheet" id="pickSheet" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="pickTitle" hidden>
+  <div class="handle" aria-hidden="true"></div>
+  <h2 id="pickTitle">Select time zone</h2>
+  <div class="search">
+    <label for="q" class="sr">Search city or time zone</label>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+    <input id="q" type="search" placeholder="Search city or time zone" autocomplete="off">
+  </div>
+  <div class="list" id="list"></div>
+</div>
+
+<div class="sheet" id="setSheet" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="setTitle" hidden>
+  <div class="handle" aria-hidden="true"></div>
+  <h2 id="setTitle">Settings</h2>
+  <div class="fieldset">
+    <span class="field-label" id="themeLabel">Appearance</span>
+    <div class="seg two" role="group" aria-labelledby="themeLabel">
+      <button data-theme-opt="light">Light</button><button data-theme-opt="dark">Dark</button>
+    </div>
+  </div>
+  <div class="fieldset">
+    <span class="field-label" id="clockLabel">Clock</span>
+    <div class="seg two" role="group" aria-labelledby="clockLabel">
+      <button data-clock="12">12 hour</button><button data-clock="24">24 hour</button>
+    </div>
+  </div>
+  <button class="primary" id="install">Add to Home screen</button>
+  <p class="hint" id="installHint" hidden></p>
+</div>
+
+<script>
+(function(){
+const CITIES = [
+  ['lagos','Lagos','Nigeria','NG','Africa/Lagos','WAT'],
+  ['abuja','Abuja','Nigeria','NG','Africa/Lagos','WAT'],
+  ['accra','Accra','Ghana','GH','Africa/Accra','GMT'],
+  ['nairobi','Nairobi','Kenya','KE','Africa/Nairobi','EAT'],
+  ['johannesburg','Johannesburg','South Africa','ZA','Africa/Johannesburg','SAST'],
+  ['cairo','Cairo','Egypt','EG','Africa/Cairo',''],
+  ['london','London','United Kingdom','GB','Europe/London','','en-GB'],
+  ['dublin','Dublin','Ireland','IE','Europe/Dublin','','en-GB'],
+  ['paris','Paris','France','FR','Europe/Paris','','en-GB'],
+  ['berlin','Berlin','Germany','DE','Europe/Berlin','','en-GB'],
+  ['madrid','Madrid','Spain','ES','Europe/Madrid','','en-GB'],
+  ['amsterdam','Amsterdam','Netherlands','NL','Europe/Amsterdam','','en-GB'],
+  ['istanbul','Istanbul','Türkiye','TR','Europe/Istanbul','TRT'],
+  ['moscow','Moscow','Russia','RU','Europe/Moscow','MSK'],
+  ['dubai','Dubai','United Arab Emirates','AE','Asia/Dubai','GST'],
+  ['riyadh','Riyadh','Saudi Arabia','SA','Asia/Riyadh','AST'],
+  ['karachi','Karachi','Pakistan','PK','Asia/Karachi','PKT'],
+  ['mumbai','Mumbai','India','IN','Asia/Kolkata','IST'],
+  ['dhaka','Dhaka','Bangladesh','BD','Asia/Dhaka',''],
+  ['bangkok','Bangkok','Thailand','TH','Asia/Bangkok','ICT'],
+  ['singapore','Singapore','Singapore','SG','Asia/Singapore','SGT'],
+  ['hongkong','Hong Kong','China','HK','Asia/Hong_Kong','HKT'],
+  ['shanghai','Shanghai','China','CN','Asia/Shanghai','CST'],
+  ['seoul','Seoul','South Korea','KR','Asia/Seoul','KST'],
+  ['tokyo','Tokyo','Japan','JP','Asia/Tokyo','JST'],
+  ['sydney','Sydney','Australia','AU','Australia/Sydney','','en-AU'],
+  ['auckland','Auckland','New Zealand','NZ','Pacific/Auckland','','en-NZ'],
+  ['honolulu','Honolulu','United States','US','Pacific/Honolulu',''],
+  ['anchorage','Anchorage','United States','US','America/Anchorage',''],
+  ['losangeles','Los Angeles','United States','US','America/Los_Angeles',''],
+  ['sanfrancisco','San Francisco','United States','US','America/Los_Angeles',''],
+  ['seattle','Seattle','United States','US','America/Los_Angeles',''],
+  ['vancouver','Vancouver','Canada','CA','America/Vancouver',''],
+  ['denver','Denver','United States','US','America/Denver',''],
+  ['phoenix','Phoenix','United States','US','America/Phoenix',''],
+  ['chicago','Chicago','United States','US','America/Chicago',''],
+  ['houston','Houston','United States','US','America/Chicago',''],
+  ['mexicocity','Mexico City','Mexico','MX','America/Mexico_City',''],
+  ['toronto','Toronto','Canada','CA','America/Toronto',''],
+  ['newyork','New York','United States','US','America/New_York',''],
+  ['atlanta','Atlanta','United States','US','America/New_York',''],
+  ['miami','Miami','United States','US','America/New_York',''],
+  ['bogota','Bogotá','Colombia','CO','America/Bogota','COT'],
+  ['lima','Lima','Peru','PE','America/Lima','PET'],
+  ['saopaulo','São Paulo','Brazil','BR','America/Sao_Paulo','BRT'],
+  ['buenosaires','Buenos Aires','Argentina','AR','America/Argentina/Buenos_Aires','ART']
+].map(a => ({id:a[0],city:a[1],country:a[2],code:a[3],tz:a[4],abbr:a[5],locale:a[6]||'en-US'}));
+const POPULAR = ['newyork','losangeles','chicago','denver','toronto','london','lagos','accra','dubai'];
+const byId = {}; CITIES.forEach(c => byId[c.id] = c);
+
+let localTz = 'Africa/Lagos';
+try { localTz = Intl.DateTimeFormat().resolvedOptions().timeZone || localTz; } catch(e){}
+let localCity = CITIES.find(c => c.tz === localTz);
+if (!localCity) {
+  localCity = {id:'local',city:localTz.split('/').pop().replace(/_/g,' '),country:'Your location',code:'',tz:localTz,abbr:'',locale:'en-US'};
+  try { new Intl.DateTimeFormat('en-US',{timeZone:localTz}); CITIES.unshift(localCity); byId.local = localCity; }
+  catch(e){ localCity = byId.lagos; }
+}
+
+const KEY = 'duo:v1';
+const defaults = {you:localCity.id, compare:localCity.id==='losangeles'?'lagos':'losangeles', extras:[], recent:[], theme:'light', h24:false};
+let S = Object.assign({}, defaults);
+try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign({}, defaults, JSON.parse(raw)); } catch(e){}
+const valid = id => !!byId[id];
+if (S.theme !== 'dark') S.theme = 'light';
+if (!valid(S.you)) S.you = defaults.you;
+if (!valid(S.compare)) S.compare = defaults.compare;
+S.extras = (S.extras||[]).filter(valid);
+S.recent = (S.recent||[]).filter(valid);
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} };
+
+const pad = n => (n<10?'0':'')+n;
+const fmtCache = {};
+function partsOf(tz, t){
+  const k = tz;
+  if (!fmtCache[k]) fmtCache[k] = new Intl.DateTimeFormat('en-US',{timeZone:tz,hourCycle:'h23',year:'numeric',month:'short',day:'numeric',weekday:'short',hour:'numeric',minute:'numeric'});
+  const p = {}; fmtCache[k].formatToParts(new Date(t)).forEach(x => p[x.type] = x.value);
+  return {h:(+p.hour)%24, m:+p.minute, weekday:p.weekday, day:p.day, month:p.month, year:p.year};
+}
+function offsetOf(tz, t){
+  const f = new Intl.DateTimeFormat('en-US',{timeZone:tz,hourCycle:'h23',year:'numeric',month:'numeric',day:'numeric',hour:'numeric',minute:'numeric'});
+  const p = {}; f.formatToParts(new Date(t)).forEach(x => p[x.type] = x.value);
+  const tm = Math.floor(t/60000)*60000;
+  return Math.round((Date.UTC(+p.year,+p.month-1,+p.day,(+p.hour)%24,+p.minute) - tm)/60000);
+}
+function abbrOf(c, t){
+  try {
+    const n = (new Intl.DateTimeFormat(c.locale,{timeZone:c.tz,timeZoneName:'short'}).formatToParts(new Date(t)).find(x => x.type==='timeZoneName')||{}).value||'';
+    if (n && !/^(GMT|UTC)/.test(n)) return n;
+    if (c.abbr) return c.abbr;
+    const o = offsetOf(c.tz, t); if (o === 0) return 'GMT';
+    const a = Math.abs(o); return 'GMT' + (o>0?'+':'-') + Math.floor(a/60) + (a%60 ? ':' + pad(a%60) : '');
+  } catch(e){ return c.abbr || ''; }
+}
+function clock(p){
+  if (S.h24) return {time: pad(p.h)+':'+pad(p.m), ampm:''};
+  return {time: (p.h%12||12)+':'+pad(p.m), ampm: p.h<12?'AM':'PM'};
+}
+function diffText(from, to, t){
+  const d = offsetOf(to.tz,t) - offsetOf(from.tz,t);
+  if (d === 0) return 'Same time';
+  const a = Math.abs(d), h = Math.floor(a/60), m = a%60;
+  let s = '';
+  if (h) s += h + (h===1?' hour':' hours');
+  if (m) s += (h?' ':'') + m + ' min';
+  return s + (d>0?' ahead':' behind');
+}
+function phaseOf(h){ return h<5.5||h>=19.5?'night':h<8?'dawn':h<17?'day':'dusk'; }
+
+function paintCard(el, c, t){
+  const p = partsOf(c.tz, t), k = clock(p), hf = p.h + p.m/60;
+  el.querySelector('.city-name').textContent = c.city + ', ' + abbrOf(c, t);
+  el.querySelector('.city').setAttribute('aria-label', 'Change city, currently ' + c.city);
+  el.querySelector('.time').textContent = k.time;
+  el.querySelector('.ampm').textContent = k.ampm;
+  el.querySelector('.date').textContent = p.weekday + ', ' + p.day + ' ' + p.month;
+  const ph = phaseOf(hf);
+  el.className = 'card phase-' + ph;
+  const orb = el.querySelector('.orb');
+  if (ph === 'night') { orb.classList.add('moon'); orb.style.top = '46px'; orb.style.background = ''; }
+  else {
+    orb.classList.remove('moon');
+    const e = Math.max(0, Math.sin(Math.PI * Math.min(1, Math.max(0, (hf-5.5)/14))));
+    orb.style.top = Math.round(160 - e*110) + 'px';
+    orb.style.background = e > .55 ? '#F6C94C' : '#F59A6B';
+  }
+}
+const cardYou = document.getElementById('cardYou');
+const cardCmp = document.getElementById('cardCompare');
+const diffEl = document.getElementById('diff');
+const extrasEl = document.getElementById('extras');
+
+function renderExtras(){
+  extrasEl.innerHTML = '';
+  S.extras.forEach(id => {
+    const c = byId[id];
+    const li = document.createElement('li'); li.className = 'extra'; li.dataset.id = id;
+    li.innerHTML = '<div class="info"><span class="name"></span><span class="sub"></span></div><span class="t"></span><button class="icon-btn rm"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>';
+    li.querySelector('.name').textContent = c.city;
+    li.querySelector('.rm').setAttribute('aria-label', 'Remove ' + c.city);
+    li.querySelector('.rm').addEventListener('click', () => { S.extras = S.extras.filter(x => x !== id); save(); renderExtras(); tick(); document.getElementById('addCity').focus(); });
+    extrasEl.appendChild(li);
+  });
+}
+function tick(){
+  const t = Date.now();
+  const you = byId[S.you], cmp = byId[S.compare];
+  paintCard(cardYou, you, t);
+  paintCard(cardCmp, cmp, t);
+  const dt = diffText(you, cmp, t);
+  if (diffEl.textContent !== dt) diffEl.textContent = dt;
+  extrasEl.querySelectorAll('.extra').forEach(li => {
+    const c = byId[li.dataset.id], p = partsOf(c.tz, t), k = clock(p);
+    li.querySelector('.sub').textContent = abbrOf(c, t) + ', ' + diffText(you, c, t).toLowerCase();
+    li.querySelector('.t').innerHTML = k.time + (k.ampm ? '<small>' + k.ampm + '</small>' : '');
+  });
+}
+
+/* sheets */
+const scrim = document.getElementById('scrim');
+let openSheet = null, lastFocus = null;
+function showSheet(el, focusEl){
+  lastFocus = document.activeElement;
+  el.hidden = false; openSheet = el;
+  requestAnimationFrame(() => { el.classList.add('open'); scrim.classList.add('open'); (focusEl||el).focus({preventScroll:true}); });
+}
+function hideSheet(){
+  if (!openSheet) return;
+  const el = openSheet; openSheet = null;
+  el.classList.remove('open'); scrim.classList.remove('open');
+  setTimeout(() => { el.hidden = true; }, 300);
+  if (lastFocus) lastFocus.focus({preventScroll:true});
+}
+scrim.addEventListener('click', hideSheet);
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && openSheet) hideSheet(); });
+
+/* picker */
+let pickMode = 'compare';
+const q = document.getElementById('q'), list = document.getElementById('list');
+function rowFor(c, t, current){
+  const b = document.createElement('button'); b.className = 'row';
+  if (current) b.setAttribute('aria-current','true');
+  const k = clock(partsOf(c.tz, t));
+  b.innerHTML = '<span class="badge" aria-hidden="true"></span><span class="info"><span class="n"></span><span class="c"></span></span><span class="now"></span><span class="tick" aria-hidden="true">' + (current ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>' : '') + '</span>';
+  b.querySelector('.badge').textContent = c.code || c.city.slice(0,2).toUpperCase();
+  b.querySelector('.n').textContent = c.city + ', ' + abbrOf(c, t);
+  b.querySelector('.c').textContent = c.country;
+  b.querySelector('.now').textContent = k.time + (k.ampm ? ' ' + k.ampm : '');
+  b.addEventListener('click', () => choose(c.id));
+  return b;
+}
+function renderList(){
+  const t = Date.now(), term = q.value.trim().toLowerCase();
+  const current = pickMode === 'you' ? S.you : pickMode === 'compare' ? S.compare : null;
+  list.innerHTML = '';
+  const addGroup = (title, items) => {
+    if (!items.length) return;
+    const h = document.createElement('div'); h.className = 'group'; h.textContent = title; list.appendChild(h);
+    items.forEach(c => list.appendChild(rowFor(c, t, c.id === current)));
+  };
+  if (term) {
+    const hits = CITIES.filter(c => (c.city + ' ' + c.country + ' ' + abbrOf(c,t) + ' ' + c.tz).toLowerCase().includes(term));
+    if (!hits.length) { const e = document.createElement('p'); e.className = 'empty'; e.textContent = 'No match for "' + q.value.trim() + '". Try a nearby big city.'; list.appendChild(e); return; }
+    addGroup('Results', hits);
+    return;
+  }
+  const recent = S.recent.slice(0,3).map(id => byId[id]);
+  addGroup('Recent', recent);
+  addGroup('Popular', POPULAR.map(id => byId[id]).filter(c => recent.indexOf(c) < 0));
+  addGroup('All cities', CITIES.filter(c => POPULAR.indexOf(c.id) < 0 && recent.indexOf(c) < 0).sort((a,b) => a.city.localeCompare(b.city)));
+}
+function openPicker(mode){
+  pickMode = mode;
+  document.getElementById('pickTitle').textContent = mode === 'you' ? 'Your time zone' : mode === 'add' ? 'Add a city' : 'Compare with';
+  q.value = ''; renderList();
+  showSheet(document.getElementById('pickSheet'));
+}
+function choose(id){
+  if (pickMode === 'you') S.you = id;
+  else if (pickMode === 'compare') S.compare = id;
+  else if (S.extras.indexOf(id) < 0) S.extras.push(id);
+  S.recent = [id].concat(S.recent.filter(x => x !== id)).slice(0,6);
+  save(); renderExtras(); tick(); hideSheet();
+}
+q.addEventListener('input', renderList);
+document.querySelectorAll('.city').forEach(b => b.addEventListener('click', () => openPicker(b.dataset.slot)));
+document.getElementById('addCity').addEventListener('click', () => openPicker('add'));
+const swapBtn = document.getElementById('swap');
+swapBtn.addEventListener('click', () => {
+  const a = S.you; S.you = S.compare; S.compare = a; save(); tick();
+  swapBtn.classList.toggle('spin');
+});
+
+/* settings */
+function applyTheme(){
+  document.documentElement.setAttribute('data-theme', S.theme);
+  document.querySelector('meta[name="theme-color"]').setAttribute('content', S.theme === 'dark' ? '#0D1020' : '#F7F7FA');
+  document.querySelectorAll('[data-theme-opt]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.themeOpt === S.theme)));
+  document.querySelectorAll('[data-clock]').forEach(b => b.setAttribute('aria-pressed', String((b.dataset.clock === '24') === S.h24)));
+}
+document.querySelectorAll('[data-theme-opt]').forEach(b => b.addEventListener('click', () => { S.theme = b.dataset.themeOpt; save(); applyTheme(); }));
+document.querySelectorAll('[data-clock]').forEach(b => b.addEventListener('click', () => { S.h24 = b.dataset.clock === '24'; save(); applyTheme(); tick(); }));
+document.getElementById('openSettings').addEventListener('click', () => { document.getElementById('installHint').hidden = true; showSheet(document.getElementById('setSheet')); });
+
+/* home screen icon and install */
+let deferred = null;
+function makeIcon(size){
+  const c = document.createElement('canvas'); c.width = c.height = size;
+  const x = c.getContext('2d');
+  x.fillStyle = '#4B3FD6'; x.fillRect(0, 0, size, size);
+  x.lineWidth = size*0.07;
+  x.strokeStyle = '#FFFFFF'; x.beginPath(); x.arc(size*0.38, size*0.5, size*0.25, 0, Math.PI*2); x.stroke();
+  x.strokeStyle = '#F6C94C'; x.beginPath(); x.arc(size*0.62, size*0.5, size*0.25, 0, Math.PI*2); x.stroke();
+  return c.toDataURL('image/png');
+}
+try {
+  const icon192 = makeIcon(192), icon512 = makeIcon(512);
+  document.getElementById('touchIcon').href = makeIcon(180);
+  const manifest = {name:'Duo',short_name:'Duo',start_url:location.href,display:'standalone',background_color:'#F7F7FA',theme_color:'#4B3FD6',
+    icons:[{src:icon192,sizes:'192x192',type:'image/png',purpose:'any'},{src:icon512,sizes:'512x512',type:'image/png',purpose:'any'},{src:icon512,sizes:'512x512',type:'image/png',purpose:'maskable'}]};
+  const link = document.createElement('link'); link.rel = 'manifest';
+  link.href = URL.createObjectURL(new Blob([JSON.stringify(manifest)], {type:'application/manifest+json'}));
+  document.head.appendChild(link);
+} catch(e){}
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferred = e; });
+document.getElementById('install').addEventListener('click', async () => {
+  const hint = document.getElementById('installHint');
+  if (deferred) {
+    try { deferred.prompt(); await deferred.userChoice; } catch(e){}
+    deferred = null; return;
+  }
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  hint.textContent = ios
+    ? 'In Safari, tap the Share button, then Add to Home Screen.'
+    : 'Open your browser menu (the three dots), then tap Add to Home screen.';
+  hint.hidden = false;
+});
+
+applyTheme(); renderExtras(); tick();
+setInterval(tick, 1000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) tick(); });
+})();
+</script>
+</body>
+</html>
